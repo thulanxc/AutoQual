@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-项目配置文件
+Project configuration file.
 """
 
 import os
@@ -23,31 +23,32 @@ ANNOTATION_MAX_WORKERS = 50
 # Save a checkpoint file after every N rows during prompt annotation
 ANNOTATION_CHECKPOINT_INTERVAL = 100
 
-# 执行模式: 'auto' (全自动) 或 'manual' (手动干预)
-# 'manual' 模式下，每次调用大模型后会暂停，等待用户确认和修改
+# Execution Mode: 'auto' (fully automated) or 'manual' (user intervention)
+# In 'manual' mode, the process will pause after each major LLM call
+# to await user confirmation and allow for modifications.
 EXECUTION_MODE = 'manual'
 
-# 初始特征池生成参数
-# 1. 基于角色的特征生成
-ROLE_COUNT = 3  # 要生成的角色数量
+# Initial Feature Pool Generation Parameters
+# 1. Role-based Feature Generation
+ROLE_COUNT = 3  # Number of roles to generate
 
-# 2. 基于数据的特征生成
-SAMPLE_COUNT = 20 # 用于分析的高分/低分样本数量
+# 2. Data-based Feature Generation
+SAMPLE_COUNT = 20 # Number of high/low score samples to analyze
 
-# 3. Prompt中可配置的生成数量
-#   - 每个角色生成的特征数
+# 3. Configurable generation counts for prompts
+#   - Number of features generated per role
 FEATURE_COUNT_PER_ROLE = 3
-#   - 从高分样本中生成的特征数
+#   - Number of features generated from high-score samples
 FEATURE_COUNT_POSITIVE = 3
-#   - 从低分样本中生成的特征数
+#   - Number of features generated from low-score samples
 FEATURE_COUNT_NEGATIVE = 3
-#   - 从对比分析中生成的特征数
+#   - Number of features generated from contrastive analysis
 FEATURE_COUNT_CONTRASTIVE = 10
 
 # --- Scene Configuration ---
-# 设置场景名称，所有数据和输出路径都将从此派生。
-# 切换场景时，只需修改此处的 SCENE_NAME 即可。
-# SCENE_NAME = "Amazon_cellphones" # 另一个场景示例
+# Set the scene name. All data and output paths will be derived from this.
+# To switch scenes, just modify SCENE_NAME here.
+# SCENE_NAME = "Amazon_cellphones" # Example of another scene
 SCENE_NAME = "Amazon_office" 
 
 # --- Base Directories ---
@@ -61,18 +62,18 @@ OUTPUT_DIR = os.path.join(OUTPUT_DIR_BASE, SCENE_NAME)
 # --- Input Files ---
 SCENE_DESCRIPTION_FILE = os.path.join(SCENE_DATA_DIR, "scene_description.txt")
 
-# 自动在场景目录中查找数据CSV文件
+# Automatically find the data CSV file in the scene directory
 csv_files = glob.glob(os.path.join(SCENE_DATA_DIR, "*.csv"))
 if not csv_files:
-    # 如果找不到CSV文件，后续使用DATA_FILE的脚本会报错，提示清晰
-    DATA_FILE = f"错误：在场景目录 '{SCENE_DATA_DIR}' 中未找到CSV文件"
+    # If no CSV file is found, scripts using DATA_FILE will raise a clear error
+    DATA_FILE = f"Error: No CSV file found in the scene directory '{SCENE_DATA_DIR}'"
 elif len(csv_files) > 1:
-    print(f"警告：在 {SCENE_DATA_DIR} 中找到多个CSV文件。将使用第一个：{csv_files[0]}")
+    print(f"Warning: Found multiple CSV files in {SCENE_DATA_DIR}. Using the first one: {csv_files[0]}")
     DATA_FILE = csv_files[0]
 else:
     DATA_FILE = csv_files[0]
 
-# 工具路径
+# Tool Paths
 TOOLS_DIR = os.path.join(OUTPUT_DIR, "tools")
 CODE_TOOLS_DIR = os.path.join(TOOLS_DIR, "code")
 PROMPT_TOOLS_DIR = os.path.join(TOOLS_DIR, "prompts")
@@ -100,7 +101,7 @@ BOW_MAX_FEATURES = 500
 EVAL_SAMPLE_SIZE = 500 # Number of samples to use for LLM baseline evaluations
 FEW_SHOT_EXAMPLES = 10 # Number of examples for the few-shot baseline
 
-# 输出文件
+# Output Files
 TRAIN_DATA_FILE = os.path.join(OUTPUT_DIR, "train_data.csv")
 TEST_DATA_FILE = os.path.join(OUTPUT_DIR, "test_data.csv")
 CODE_ANNOTATED_FILE = os.path.join(OUTPUT_DIR, "intermediate_code_annotated.csv")
