@@ -12,58 +12,58 @@ from memory_manager import MemoryManager
 
 def main():
     """
-    主函数，项目的入口。
+    Main function, entry point of the project.
     """
-    # 检查输入文件是否存在
+    # Check if input files exist
     if not os.path.exists(config.SCENE_DESCRIPTION_FILE):
-        print(f"错误：场景描述文件未找到，路径: {config.SCENE_DESCRIPTION_FILE}")
+        print(f"Error: Scene description file not found at: {config.SCENE_DESCRIPTION_FILE}")
         return
     if not os.path.exists(config.DATA_FILE):
-        print(f"错误：数据文件未找到，路径: {config.DATA_FILE}")
+        print(f"Error: Data file not found at: {config.DATA_FILE}")
         return
 
-    # 加载输入
+    # Load inputs
     try:
         with open(config.SCENE_DESCRIPTION_FILE, 'r', encoding='utf-8') as f:
             scene_description = f.read()
         
         df = pd.read_csv(config.DATA_FILE)
         
-        # 验证CSV文件格式
+        # Validate CSV format
         if 'text' not in df.columns or 'score' not in df.columns:
-            print("错误：CSV文件必须包含 'text' 和 'score' 两列。")
+            print("Error: The CSV file must contain 'text' and 'score' columns.")
             return
             
     except Exception as e:
-        print(f"加载输入文件时出错: {e}")
+        print(f"Error loading input files: {e}")
         return
 
     print("="*50)
-    print(" AutoQual: 自动特征发现代理")
+    print(" AutoQual: Automated Feature Discovery Agent")
     print("="*50)
-    print(f"当前模式: {config.EXECUTION_MODE}")
-    print(f"场景描述文件: {config.SCENE_DESCRIPTION_FILE}")
-    print(f"数据文件: {config.DATA_FILE}")
+    print(f"Current Mode: {config.EXECUTION_MODE}")
+    print(f"Scene Description File: {config.SCENE_DESCRIPTION_FILE}")
+    print(f"Data File: {config.DATA_FILE}")
     print("="*50)
 
     try:
-        # 初始化核心模块
+        # Initialize core modules
         llm_provider = LLMProvider()
         memory_manager = MemoryManager(llm_provider)
         feature_generator = FeatureGenerator(llm_provider, memory_manager)
 
-        # 执行第一部分：生成初始特征池
+        # Part 1: Generate initial feature pool
         final_features_str = feature_generator.generate_initial_features(scene_description, df)
 
         if not final_features_str or final_features_str.startswith("Error"):
             print("\nCritical error in feature generation. Aborting.")
             return
 
-        # 执行第二部分：生成注释工具
+        # Part 2: Generate annotation tools
         tool_generator = ToolGenerator(llm_provider, df)
         tool_generator.generate_all_tools(final_features_str, feature_generator.overwrite_files)
         
-        # 执行第三部分：特征注释
+        # Part 3: Annotate features
         print("\n--- STAGE 6/6: ANNOTATING FEATURES WITH ALL TOOLS ---")
         annotator = Annotator(llm_provider, df)
         annotated_df = annotator.annotate_features()
@@ -72,12 +72,12 @@ def main():
             print("\nAnnotation resulted in an empty dataframe. Aborting feature selection.")
             return
 
-        # --- Part 4: Reflective Feature Selection (Stage 7) ---
+        # Part 4: Reflective Feature Selection
         print("\n--- STAGE 7/7: SELECTING BEST FEATURES WITH REFLECTION ---")
         selector = FeatureSelector(config.ANNOTATED_DATA_FILE, llm_provider, scene_description)
         best_feature_set = selector.select_features()
 
-        # --- Part 5: Cross-Task Memory Summarization ---
+        # Part 5: Cross-Task Memory Summarization
         if best_feature_set:
             print("\n--- STAGE 8/8: SUMMARIZING FINDINGS FOR CROSS-TASK MEMORY ---")
             task_name = os.path.basename(config.DATA_DIR)
@@ -98,9 +98,9 @@ def main():
         print("="*50)
 
     except ValueError as ve:
-        print(f"\n配置错误: {ve}")
+        print(f"\nConfiguration Error: {ve}")
     except Exception as e:
-        print(f"\n程序执行时发生意外错误: {e}")
+        print(f"\nAn unexpected error occurred during execution: {e}")
 
 
 if __name__ == "__main__":
